@@ -61,7 +61,7 @@ router.post('/donate', upload.fields([
       )
     `;
 
-    res.json({ success: true, message: 'Donation registered successfully', txn_id });
+    res.json({ success: true, message: 'Donation registered successfully', txn_id, profile_pic_url });
   } catch (error) {
     console.error('Donate error:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });

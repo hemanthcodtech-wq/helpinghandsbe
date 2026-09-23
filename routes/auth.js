@@ -36,8 +36,15 @@ router.post('/login', async (req, res) => {
       success: true, 
       user: {
         id: user.id,
+        name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        phone: user.phone,
+        city: user.working_area,
+        status: user.status,
+        appliedDate: user.created_at,
+        area_of_interest: user.area_of_interest,
+        photo: user.profile_pic_url
       } 
     });
   } catch (error) {

@@ -288,4 +288,52 @@ router.delete('/updates/:id', async (req, res) => {
   }
 });
 
+// GET volunteer activities
+router.get('/:id/activities', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const activities = await sql`SELECT id, volunteer_id, title, hours, status, TO_CHAR(date, 'YYYY-MM-DD') as formatted_date FROM volunteer_activities WHERE volunteer_id = ${id} ORDER BY date DESC`;
+    res.json({ success: true, activities });
+  } catch (error) {
+    console.error('Fetch activities error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// GET volunteer campaigns
+router.get('/:id/campaigns', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const campaigns = await sql`SELECT id, volunteer_id, campaign_name, role, status, TO_CHAR(date, 'YYYY-MM-DD') as formatted_date FROM volunteer_campaigns WHERE volunteer_id = ${id} ORDER BY date DESC`;
+    res.json({ success: true, campaigns });
+  } catch (error) {
+    console.error('Fetch campaigns error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// GET volunteer programs
+router.get('/:id/programs', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const programs = await sql`SELECT * FROM volunteer_programs WHERE volunteer_id = ${id}`;
+    res.json({ success: true, programs });
+  } catch (error) {
+    console.error('Fetch programs error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// GET volunteer certificates
+router.get('/:id/certificates', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const certificates = await sql`SELECT id, volunteer_id, name, issuer, TO_CHAR(date, 'YYYY-MM-DD') as formatted_date FROM volunteer_certificates WHERE volunteer_id = ${id} ORDER BY date DESC`;
+    res.json({ success: true, certificates });
+  } catch (error) {
+    console.error('Fetch certificates error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
 module.exports = router;
