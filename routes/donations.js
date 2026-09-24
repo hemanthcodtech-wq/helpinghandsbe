@@ -5,6 +5,8 @@ const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
 const crypto = require('crypto');
+const nodemailer = require('nodemailer');
+const { generate80GPdf } = require('../utils/receiptGenerator');
 
 const sql = neon(process.env.DATABASE_URL);
 
@@ -25,6 +27,14 @@ const storage = new CloudinaryStorage({
 });
 const upload = multer({ storage: storage });
 
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
+  }
+});
+
 // Route to handle donation form submission
 router.post('/donate', upload.fields([
   { name: 'profile_picture', maxCount: 1 },
@@ -39,8 +49,8 @@ router.post('/donate', upload.fields([
     const aadhaar_front_url = req.files && req.files['aadhaar_front'] ? req.files['aadhaar_front'][0].path : null;
     const aadhaar_back_url = req.files && req.files['aadhaar_back'] ? req.files['aadhaar_back'][0].path : null;
 
-    // Generate a random transaction ID for this demo
-    const txn_id = 'TXN' + crypto.randomBytes(4).toString('hex').toUpperCase();
+    // Use the transaction ID from the client (Razorpay ID), or generate a random one if not provided
+    const txn_id = data.txn_id || ('TXN' + crypto.randomBytes(4).toString('hex').toUpperCase());
     const amountStr = data.amount ? data.amount.replace(/[^0-9]/g, '') : "0";
 
     // Allow parsing campaign_id if present
@@ -52,14 +62,48 @@ router.post('/donate', upload.fields([
         amount, payment_method, recurring, designation, name, gender,
         parent_name, dob, profession, blood_group, email, phone,
         aadhaar, state, district, working_area, pincode, address,
-        profile_pic_url, aadhaar_front_url, aadhaar_back_url, txn_id, campaign_id, status
+        profile_pic_url, aadhaar_front_url, aadhaar_back_url, txn_id, campaign_id, status, pan_number, requests_80g
       ) VALUES (
         ${amountStr}, ${data.payment_method}, ${data.recurring === 'true'}, ${data.designation}, ${data.name}, ${data.gender},
         ${data.parent_name}, ${data.dob || null}, ${data.profession}, ${data.blood_group}, ${data.email}, ${data.phone},
         ${data.aadhaar}, ${data.state}, ${data.district}, ${data.working_area}, ${data.pincode}, ${data.address},
-        ${profile_pic_url}, ${aadhaar_front_url}, ${aadhaar_back_url}, ${txn_id}, ${campaign_id}, 'success'
+        ${profile_pic_url}, ${aadhaar_front_url}, ${aadhaar_back_url}, ${txn_id}, ${campaign_id}, 'success', ${data.pan_number || null}, ${data.requests_80g === 'true'}
       )
     `;
+
+    // Send 80G Receipt if requested and email is provided
+    if (data.requests_80g === 'true' && data.email) {
+      try {
+        const donationData = {
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          address: data.address,
+          amount: amountStr,
+          txn_id: txn_id,
+          pan_number: data.pan_number,
+          designation: data.designation,
+          payment_method: data.payment_method
+        };
+        const pdfBuffer = await generate80GPdf(donationData);
+        
+        await transporter.sendMail({
+          from: `"Helping Hands Foundation" <${process.env.SMTP_USER}>`,
+          to: data.email,
+          subject: 'Your 80G Tax Exemption Receipt - Helping Hands Foundation',
+          text: `Dear ${data.name},\n\nThank you for your generous donation of Rs. ${amountStr}/-. Please find attached your 80G Tax Exemption Receipt.\n\nWarm regards,\nHelping Hands Foundation`,
+          attachments: [
+            {
+              filename: `80G_Receipt_${txn_id}.pdf`,
+              content: pdfBuffer,
+              contentType: 'application/pdf'
+            }
+          ]
+        });
+      } catch (pdfErr) {
+        console.error('Error generating or sending PDF:', pdfErr);
+      }
+    }
 
     res.json({ success: true, message: 'Donation registered successfully', txn_id, profile_pic_url });
   } catch (error) {
