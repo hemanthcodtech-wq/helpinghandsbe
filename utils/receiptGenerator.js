@@ -14,8 +14,9 @@ function generate80GPdf(donationData) {
 
       // Headers
       doc.fontSize(20).font('Helvetica-Bold').text('HELPING HANDS FOUNDATION', { align: 'center' });
-      doc.fontSize(10).font('Helvetica').text('H.No: 4-187/4, Ambabhavani Pet, Gowli Pet, Adoni – 518301, Kurnool District, A.P.', { align: 'center' });
-      doc.text('Email: helpinghandsffoundation@gmail.com | Phone: +91 7093426966', { align: 'center' });
+      doc.fontSize(9).font('Helvetica').text('Head office: H.No: 4/211/2, SHAKTHI GUDI, ADONI 518301, ADONI MANDAL, KURNOOL DISTRICT, A.P.', { align: 'center' });
+      doc.fontSize(9).font('Helvetica').text('Working present: H.No: 4-187/4, AMBABHAVANI PET, GOWLI PET, ADONI 518301, ADONI MANDAL, KURNOOL DISTRICT, A.P.', { align: 'center' });
+      doc.text('Email: helpinghandsffoundation@gmail.com | Phone: +91 77993 73766 | WhatsApp: +91 70934 26966', { align: 'center' });
       doc.text('Website: helpinghandsfoundation1.org', { align: 'center' });
       
       doc.moveDown();
