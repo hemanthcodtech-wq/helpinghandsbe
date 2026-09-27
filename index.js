@@ -55,6 +55,7 @@ const testimonialsRoutes = require('./routes/testimonials');
 const settingsRoutes = require('./routes/settings');
 const bankAccountRoutes = require('./routes/bankAccounts');
 const membersRouter = require('./routes/members');
+const coordinatorsRouter = require('./routes/coordinators');
 
 app.use('/api/campaigns', campaignsRoutes);
 app.use('/api/teams', teamsRoutes);
@@ -64,6 +65,7 @@ app.use('/api/testimonials', testimonialsRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/bank-accounts', bankAccountRoutes);
 app.use('/api/members', membersRouter);
+app.use('/api/coordinators', coordinatorsRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
