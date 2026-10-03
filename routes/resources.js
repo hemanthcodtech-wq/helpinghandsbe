@@ -30,8 +30,8 @@ router.post('/', upload.single('file'), async (req, res) => {
   try {
     const { category, title, description } = req.body;
     
-    // File URL from cloudinary if uploaded
-    const file_url = req.file ? req.file.path : null;
+    // File URL from cloudinary if uploaded, or use the provided URL from body
+    const file_url = req.file ? req.file.path : (req.body.file_url || null);
 
     if (!category || !title) {
       return res.status(400).json({ success: false, message: 'Category and Title are required' });
